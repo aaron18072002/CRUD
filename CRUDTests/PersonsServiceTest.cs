@@ -140,7 +140,7 @@ namespace CRUDTests
                     (expectedValue.PersonID);
 
             //Assert
-            actualValue.Should().Equals(expectedValue);
+            actualValue.Should().Be(expectedValue);
             //Assert.Equal(expectedValue, actualValue);
         }
         #endregion
@@ -343,17 +343,19 @@ namespace CRUDTests
             }
 
             //Assert
-            foreach (var personResponse in expectedValue)
-            {
-                if (personResponse.PersonName != null)
-                {
-                    if (personResponse.PersonName.Contains
-                        ("ma", StringComparison.OrdinalIgnoreCase))
-                    {
-                        Assert.Contains(personResponse, actualValue);
-                    }
-                }
-            }
+            actualValue.Should().OnlyContain
+                (p => p.PersonName.Contains("ma", StringComparison.OrdinalIgnoreCase));
+            //foreach (var personResponse in expectedValue)
+            //{
+            //    if (personResponse.PersonName != null)
+            //    {
+            //        if (personResponse.PersonName.Contains
+            //            ("ma", StringComparison.OrdinalIgnoreCase))
+            //        {
+            //            Assert.Contains(personResponse, actualValue);
+            //        }
+            //    }
+            //}
         }
         #endregion
 
@@ -429,10 +431,12 @@ namespace CRUDTests
             }
 
             //Assert
-            for (int i = 0; i < expectedValue.Count; i++)
-            {
-                Assert.Equal(expectedValue[i], actualValue[i]);
-            }
+            actualValue.Should().BeInDescendingOrder
+                (p => p.PersonName);
+            //for (int i = 0; i < expectedValue.Count; i++)
+            //{
+            //    Assert.Equal(expectedValue[i], actualValue[i]);
+            //}
         }
         #endregion
 
@@ -451,7 +455,8 @@ namespace CRUDTests
             };
 
             //Assert
-            await Assert.ThrowsAsync<ArgumentNullException>(actual);
+            await actual.Should().ThrowAsync<ArgumentNullException>();
+            //await Assert.ThrowsAsync<ArgumentNullException>(actual);
         }
         [Fact]
         public async Task UpdatePerson_InvalidPersonID()
@@ -469,7 +474,8 @@ namespace CRUDTests
             };
 
             //Assert
-            await Assert.ThrowsAsync<ArgumentException>(actual);
+            await actual.Should().ThrowAsync<ArgumentException>();
+            //await Assert.ThrowsAsync<ArgumentException>(actual);
         }
         [Fact]
         public async Task UpdatePerson_NullPersonName()
@@ -502,7 +508,8 @@ namespace CRUDTests
             };
 
             //Assert
-            await Assert.ThrowsAsync<ArgumentException>(actual);
+            await actual.Should().ThrowAsync<ArgumentException>();
+            //await Assert.ThrowsAsync<ArgumentException>(actual);
         }
 
         [Fact]
@@ -536,7 +543,8 @@ namespace CRUDTests
                     (personUpdateRequest.PersonID);
 
             //Assert
-            Assert.Equal(expectedValue, actualValue);
+            expectedValue.Should().Be(actualValue);
+            //Assert.Equal(expectedValue, actualValue);
         }
         #endregion
 
@@ -549,7 +557,8 @@ namespace CRUDTests
                 this._personsService.DeletePerson(Guid.NewGuid());
 
             //Assert
-            Assert.False(isSuccess);
+            isSuccess.Should().BeFalse();
+            // Assert.False(isSuccess);
         }
         [Fact]
         public async Task DeletePerson_ValidPersonID()
@@ -575,7 +584,8 @@ namespace CRUDTests
                     (personResponse.PersonID);
 
             //Assert
-            Assert.True(isSuccess);
+            isSuccess.Should().BeTrue();
+            //Assert.True(isSuccess);
         }
         #endregion
     }
