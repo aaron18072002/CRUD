@@ -31,13 +31,13 @@ namespace RepositoryContracts
         /// </summary>
         /// <param name="countryID">CountryID to search</param>
         /// <returns>Matching country or null</returns>
-        Task<Country> GetCountryById(Guid countryID);
+        Task<Country?> GetCountryById(Guid countryID);
 
         /// <summary>
         /// Return a country that have name matching with given country name
         /// </summary>
         /// <param name="countryName">CountryName to search</param>
         /// <returns>Matching country or null</returns>
-        Task<Country> GetCountryByCountryName(string countryName);
+        Task<Country?> GetCountryByCountryName(string countryName);
     }
 }
