@@ -3,6 +3,8 @@ using Entities;
 using EntityFrameworkCoreMock;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
+using Moq;
+using RepositoryContracts;
 using ServiceContracts;
 using ServiceContracts.DTOS.CountryDTO;
 using ServiceContracts.DTOS.PersonDTO;
@@ -21,11 +23,21 @@ namespace CRUDTests
     {
         private readonly IPersonsService _personsService;
         private readonly ICountriesService _countriesService;
+
+        private readonly Mock<IPersonsRepository>
+            _personsRepositoryMock;
+        private readonly IPersonsRepository _personsRepository;
+
         private readonly ITestOutputHelper _outputHelper;
         private readonly IFixture _fixture;
         public PersonsServiceTest(ITestOutputHelper testOutputHelper)
         {
             this._fixture = new Fixture();
+            this._personsRepositoryMock = 
+                new Mock<IPersonsRepository>();
+            this._personsRepository = this
+                ._personsRepositoryMock.Object;
+
             var countriesInitialData = new List<Country>() { };
             var personsInitialData = new List<Person>() { };
             DbContextMock<ApplicationDbContext> dbContextMock = new
@@ -38,9 +50,10 @@ namespace CRUDTests
                 (temp => temp.Countries, countriesInitialData);
             dbContextMock.CreateDbSetMock
                 (temp => temp.Persons, personsInitialData);
-            this._countriesService = new CountriesService(null);
+            this._countriesService = new CountriesService
+                (null) ;
             this._personsService = new PersonsService
-                (null);
+                (this._personsRepository);
             this._outputHelper = testOutputHelper;
         }
 
@@ -81,13 +94,19 @@ namespace CRUDTests
             //await Assert.ThrowsAsync<ArgumentException>(actual);
         }
         [Fact]
-        public async Task AddPerson_ProperPersonDetails()
+        public async Task AddPerson_ProperPersonDetails_ToBeSuccessful()
         {
             //Arrange
             PersonAddRequest? personAddRequest =
                this._fixture.Build<PersonAddRequest>()
                .With(p => p.Email, "someone@example.com")
                .Create();
+
+            Person person = personAddRequest.ToPerson();
+
+            this._personsRepositoryMock.Setup
+                (temp => temp.AddPerson(It.IsAny<Person>()))
+                .ReturnsAsync(person);
 
             //Act
             PersonResponse expectedValue = await
