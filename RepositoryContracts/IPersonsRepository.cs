@@ -28,7 +28,7 @@ namespace RepositoryContracts
         /// </summary>
         /// <param name="personID">PersonID(Guid) to search</param>
         /// <returns>Matching person or null</returns>
-        Task<Person> GetPersonById(Guid personID);
+        Task<Person?> GetPersonById(Guid personID);
 
         /// <summary>
         /// Return all person objects based on give expression
