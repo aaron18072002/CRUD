@@ -1,10 +1,11 @@
 ﻿using CsvHelper;
 using CsvHelper.Configuration;
 using Entities;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using OfficeOpenXml;
 using RepositoryContracts;
+using Serilog;
+using SerilogTimings;
 using ServiceContracts;
 using ServiceContracts.DTOS.PersonDTO;
 using ServiceContracts.Enums;
@@ -18,11 +19,13 @@ namespace Services
     {
         private readonly IPersonsRepository _personsRepository;
         private readonly ILogger<PersonsService> _logger;
+        private readonly IDiagnosticContext _diagnosticContext;
         //private readonly ICountriesService _countriesService;
-        public PersonsService(IPersonsRepository personsRepository, ILogger<PersonsService> logger)
+        public PersonsService(IPersonsRepository personsRepository, ILogger<PersonsService> logger, IDiagnosticContext diagnosticContext)
         {
             this._personsRepository = personsRepository; 
             this._logger = logger;
+            this._diagnosticContext = diagnosticContext;
         }
         public async Task<PersonResponse> AddPerson(PersonAddRequest? request)
         {
@@ -81,47 +84,50 @@ namespace Services
             {
                 return allPersons;
             }
-
-            List<Person> filteredPersons = searchBy switch
+            List<Person> filteredPersons;
+            using (Operation.Time("Time for Filtered Persons from database"))
             {
-                nameof(PersonResponse.PersonName) =>
-                    await this._personsRepository.GetFilteredPersons(
-                        p => p.PersonName != null &&
-                             p.PersonName.Contains(searchString)),
+                filteredPersons = await (searchBy switch
+                {
+                    nameof(PersonResponse.PersonName) =>
+                        this._personsRepository.GetFilteredPersons(
+                            p => p.PersonName != null &&
+                                 p.PersonName.Contains(searchString)),
 
-                nameof(PersonResponse.Email) =>
-                    await this._personsRepository.GetFilteredPersons(
-                        p => p.Email != null &&
-                             p.Email.Contains(searchString)),
+                    nameof(PersonResponse.Email) =>
+                        this._personsRepository.GetFilteredPersons(
+                            p => p.Email != null &&
+                                 p.Email.Contains(searchString)),
 
-                nameof(PersonResponse.DateOfBirth) =>
-                    await this._personsRepository.GetFilteredPersons(
-                        p => p.DateOfBirth.HasValue &&
-                             p.DateOfBirth.Value.ToString("dd MMMM yyyy")
-                             .Contains(searchString)),
+                    nameof(PersonResponse.DateOfBirth) =>
+                        this._personsRepository.GetFilteredPersons(
+                            p => p.DateOfBirth.HasValue &&
+                                 p.DateOfBirth.Value.ToString("dd MMMM yyyy")
+                                 .Contains(searchString)),
 
-                nameof(PersonResponse.Gender) =>
-                    await this._personsRepository.GetFilteredPersons(
-                        p => p.Gender != null &&
-                             p.Gender.Contains(searchString)),
+                    nameof(PersonResponse.Gender) =>
+                        this._personsRepository.GetFilteredPersons(
+                            p => p.Gender != null &&
+                                 p.Gender.Contains(searchString)),
 
-                nameof(PersonResponse.CountryID) =>
-                    await this._personsRepository.GetFilteredPersons(
-                        p => p.Country != null &&
-                             p.Country.CountryName != null &&
-                             p.Country.CountryName.Contains(searchString)),
+                    nameof(PersonResponse.CountryID) =>
+                        this._personsRepository.GetFilteredPersons(
+                            p => p.Country != null &&
+                                 p.Country.CountryName != null &&
+                                 p.Country.CountryName.Contains(searchString)),
 
-                nameof(PersonResponse.Address) =>
-                    await this._personsRepository.GetFilteredPersons(
-                        p => p.Address != null &&
-                             p.Address.Contains(searchString)),
+                    nameof(PersonResponse.Address) =>
+                        this._personsRepository.GetFilteredPersons(
+                            p => p.Address != null &&
+                                 p.Address.Contains(searchString)),
 
-                _ => await this._personsRepository.GetAllPersons(),
-            };
+                    _ => this._personsRepository.GetAllPersons(),
+                });
+            }
 
+            this._diagnosticContext.Set("Persons", filteredPersons);
 
-            return filteredPersons.Select
-                (p => p.ToPersonResponse()).ToList();
+            return filteredPersons.Select(p => p.ToPersonResponse()).ToList();
         }
         public async Task<List<PersonResponse>> GetSortedPersons
             (List<PersonResponse> allPersons,

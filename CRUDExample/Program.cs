@@ -2,18 +2,27 @@ using Entities;
 using Microsoft.EntityFrameworkCore;
 using Repositories;
 using RepositoryContracts;
+using Serilog;
 using ServiceContracts;
 using Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 //Logging
-builder.Host.ConfigureLogging(loggingProvider =>
-{
-    loggingProvider.ClearProviders();
-    loggingProvider.AddConsole();
-    loggingProvider.AddDebug();
-    loggingProvider.AddEventLog();
+//builder.Host.ConfigureLogging(loggingProvider =>
+//{
+//    loggingProvider.ClearProviders();
+//    loggingProvider.AddConsole();
+//    loggingProvider.AddDebug();
+//    loggingProvider.AddEventLog();
+//});
+
+//Serilog
+builder.Host.UseSerilog((HostBuilderContext context, IServiceProvider services, LoggerConfiguration loggerConfiguration) => {
+
+    loggerConfiguration
+    .ReadFrom.Configuration(context.Configuration) //read configuration settings from built-in IConfiguration
+    .ReadFrom.Services(services); //read out current app's services and make them available to serilog
 });
 
 builder.Services.AddControllersWithViews();
@@ -44,6 +53,8 @@ builder.Services.AddHttpLogging
 //Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=PersonsDatabase;Integrated Security=True;Connect Timeout=30;Encrypt=False;Trust Server Certificate=False;Application Intent=ReadWrite;Multi Subnet Failover=False
 
 var app = builder.Build();
+
+app.UseSerilogRequestLogging();
 
 if (builder.Environment.IsDevelopment())
 {

@@ -3,8 +3,10 @@ using Entities;
 using EntityFrameworkCoreMock;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Moq;
 using RepositoryContracts;
+using Serilog.Extensions.Hosting;
 using ServiceContracts;
 using ServiceContracts.DTOS.CountryDTO;
 using ServiceContracts.DTOS.PersonDTO;
@@ -38,6 +40,8 @@ namespace CRUDTests
                 new Mock<IPersonsRepository>();
             this._personsRepository = this
                 ._personsRepositoryMock.Object;
+            var diagosticContextMock = new Mock<DiagnosticContext>();
+            var loggerMock = new Mock<ILogger<PersonsService>>();
 
             var countriesInitialData = new List<Country>() { };
             var personsInitialData = new List<Person>() { };
@@ -54,7 +58,7 @@ namespace CRUDTests
             this._countriesService = new CountriesService
                 (null);
             this._personsService = new PersonsService
-                (this._personsRepository);
+                (this._personsRepository, loggerMock.Object, diagosticContextMock.Object);
             this._outputHelper = testOutputHelper;
         }
 

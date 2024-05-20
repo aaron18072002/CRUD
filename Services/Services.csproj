@@ -11,6 +11,8 @@
     <PackageReference Include="EPPlus" Version="7.1.2" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Features" Version="2.0.1" />
     <PackageReference Include="OfficeOpenXml.Core.ExcelPackage" Version="1.0.0" />
+    <PackageReference Include="Serilog.Extensions.Hosting" Version="5.0.1" />
+    <PackageReference Include="SerilogTimings" Version="3.0.1" />
   </ItemGroup>
 
   <ItemGroup>

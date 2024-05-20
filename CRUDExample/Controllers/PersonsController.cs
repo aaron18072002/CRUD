@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Rotativa.AspNetCore;
+using Serilog;
 using ServiceContracts;
 using ServiceContracts.DTOS.CountryDTO;
 using ServiceContracts.DTOS.PersonDTO;
@@ -15,13 +16,15 @@ namespace CRUDExample.Controllers
         private readonly IPersonsService _personsService;
         private readonly ICountriesService _countriesService;
         private readonly ILogger<PersonsController> _logger;
+        private readonly IDiagnosticContext _diagnosticContext;
 
         //constructor
-        public PersonsController(IPersonsService personsService, ICountriesService countriesService, ILogger<PersonsController> logger)
+        public PersonsController(IPersonsService personsService, ICountriesService countriesService, ILogger<PersonsController> logger, IDiagnosticContext diagnosticContext)
         {
             this._personsService = personsService;
             this._countriesService = countriesService;
             this._logger = logger;
+            this._diagnosticContext = diagnosticContext;
         }
 
         //Url: persons/index
