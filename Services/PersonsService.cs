@@ -2,6 +2,7 @@
 using CsvHelper.Configuration;
 using Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using OfficeOpenXml;
 using RepositoryContracts;
 using ServiceContracts;
@@ -16,10 +17,12 @@ namespace Services
     public class PersonsService : IPersonsService
     {
         private readonly IPersonsRepository _personsRepository;
+        private readonly ILogger<PersonsService> _logger;
         //private readonly ICountriesService _countriesService;
-        public PersonsService(IPersonsRepository personsRepository)
+        public PersonsService(IPersonsRepository personsRepository, ILogger<PersonsService> logger)
         {
-            this._personsRepository = personsRepository;        
+            this._personsRepository = personsRepository; 
+            this._logger = logger;
         }
         public async Task<PersonResponse> AddPerson(PersonAddRequest? request)
         {
@@ -40,6 +43,8 @@ namespace Services
         }
         public async Task<List<PersonResponse>> GetAllPersons()
         {
+            this._logger.LogInformation("GetAllPersons method of " +
+                "PersonsService");
             var persons = await this._personsRepository.GetAllPersons();
             List<PersonResponse> result = persons. 
                 Select(person => person.ToPersonResponse()).ToList();
@@ -67,6 +72,8 @@ namespace Services
         public async Task<List<PersonResponse>> GetFilteredPersons
             (string searchBy, string? searchString)
         {
+            this._logger.LogInformation("GetFilteredPersons method of " +
+                "PersonsService");
             List<PersonResponse> allPersons =
                 await this.GetAllPersons();
             if (string.IsNullOrEmpty(searchString) ||
@@ -120,6 +127,8 @@ namespace Services
             (List<PersonResponse> allPersons,
             string sortBy, SortOrderOptions sortOrderOptions)
         {
+            this._logger.LogInformation("GetSortedPersons method of " +
+                "PersonsService");
             if (string.IsNullOrEmpty(sortBy)) return allPersons;
 
             List<PersonResponse> sortedPersons =

@@ -6,6 +6,16 @@ using ServiceContracts;
 using Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
+//Logging
+builder.Host.ConfigureLogging(loggingProvider =>
+{
+    loggingProvider.ClearProviders();
+    loggingProvider.AddConsole();
+    loggingProvider.AddDebug();
+    loggingProvider.AddEventLog();
+});
+
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddScoped
@@ -23,6 +33,14 @@ builder.Services.AddDbContext<ApplicationDbContext>
             ("DefaultConnection"));
     });
 
+builder.Services.AddHttpLogging
+    (options =>
+    {
+        options.LoggingFields =
+            Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.RequestProperties |
+            Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.ResponsePropertiesAndHeaders;
+    });
+
 //Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=PersonsDatabase;Integrated Security=True;Connect Timeout=30;Encrypt=False;Trust Server Certificate=False;Application Intent=ReadWrite;Multi Subnet Failover=False
 
 var app = builder.Build();
@@ -31,6 +49,8 @@ if (builder.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
 }
+
+app.UseHttpLogging();
 
 Rotativa.AspNetCore.RotativaConfiguration
     .Setup("wwwroot", wkhtmltopdfRelativePath: "Rotativa");

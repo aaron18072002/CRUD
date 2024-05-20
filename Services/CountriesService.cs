@@ -2,6 +2,8 @@
 using RepositoryContracts;
 using ServiceContracts;
 using ServiceContracts.DTOS.CountryDTO;
+using OfficeOpenXml;
+using Microsoft.AspNetCore.Http;
 
 namespace Services
 {
@@ -66,6 +68,40 @@ namespace Services
             }
 
             return country.ToCountryResponse();
+        }
+        public async Task<int> UploadCountriesFromExcelFile
+            (IFormFile formFile)
+        {
+            MemoryStream memoryStream = new MemoryStream();
+            await formFile.CopyToAsync(memoryStream);
+            int countriesInserted = 0;
+
+            using (ExcelPackage excelPackage = new ExcelPackage(memoryStream))
+            {
+                ExcelWorksheet workSheet = excelPackage.Workbook.Worksheets["Countries"];
+
+                int rowCount = workSheet.Dimension.Rows;
+
+                for (int row = 2; row <= rowCount; row++)
+                {
+                    string? cellValue = Convert.ToString(workSheet.Cells[row, 1].Value);
+
+                    if (!string.IsNullOrEmpty(cellValue))
+                    {
+                        string? countryName = cellValue;
+
+                        if (await _countriesRepository.GetCountryByCountryName(countryName) == null)
+                        {
+                            Country country = new Country() { CountryName = countryName };
+                            await _countriesRepository.AddCountry(country);
+
+                            countriesInserted++;
+                        }
+                    }
+                }
+            }
+
+            return countriesInserted;
         }
     }
 }

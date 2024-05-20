@@ -1,4 +1,5 @@
 ﻿using Entities;
+using Microsoft.AspNetCore.Http;
 using ServiceContracts.DTOS.CountryDTO;
 
 namespace ServiceContracts
@@ -31,5 +32,8 @@ namespace ServiceContracts
         /// <param name="countryID">CountryID as a Guid type</param>
         /// <returns></returns>
         Task<CountryResponse?> GetCountryByCountryID(Guid? countryID);
+
+        Task<int> UploadCountriesFromExcelFile
+            (IFormFile formFile);
     }
 }
