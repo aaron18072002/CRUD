@@ -11,6 +11,8 @@ using ServiceContracts.Enums;
 namespace CRUDExample.Controllers
 {
     [Route("[controller]")]
+    [TypeFilter(typeof(ResponseHeaderActionFilter), Arguments =
+            new string[] { "My-Key-From-Controller", "My-Value-From-Controller" })]
     public class PersonsController : Controller
     {
         //private fields
@@ -32,7 +34,12 @@ namespace CRUDExample.Controllers
         [Route("[action]")]
         [Route("/")]
         [TypeFilter(typeof(PersonsListActionFilter))]
-        public async Task<IActionResult> Index(string searchBy, string? searchString, string sortBy = nameof(PersonResponse.PersonName), SortOrderOptions sortOrder = SortOrderOptions.ASC)
+        [TypeFilter(typeof(ResponseHeaderActionFilter), Arguments = 
+            new string[] { "My-Key-From-Action", "My-Value-From-Action" })]
+        public async Task<IActionResult> Index
+            (string searchBy, string? searchString, 
+            string sortBy = nameof(PersonResponse.PersonName), 
+            SortOrderOptions sortOrder = SortOrderOptions.ASC)
         {
             this._logger.LogInformation("Index action method of" +
                 "PersonsController");
@@ -63,11 +70,10 @@ namespace CRUDExample.Controllers
             return View(sortedPersons); //Views/Persons/Index.cshtml
         }
 
-
-        //Executes when the user clicks on "Create Person" hyperlink (while opening the create view)
-        //Url: persons/create
         [Route("[action]")]
         [HttpGet]
+        [TypeFilter(typeof(ResponseHeaderActionFilter), Arguments = 
+            new string[] { "my-key", "my-value" })]
         public async Task<IActionResult> Create()
         {
             List<CountryResponse> countries = await

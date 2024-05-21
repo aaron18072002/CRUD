@@ -1,3 +1,4 @@
+using CRUDExample.Filters.ActionFilters;
 using Entities;
 using Microsoft.EntityFrameworkCore;
 using Repositories;
@@ -25,7 +26,13 @@ builder.Host.UseSerilog((HostBuilderContext context, IServiceProvider services, 
     .ReadFrom.Services(services); //read out current app's services and make them available to serilog
 });
 
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews(options =>
+{
+    var logger = builder.Services.BuildServiceProvider()
+        .GetRequiredService<ILogger<ResponseHeaderActionFilter>>();
+    options.Filters.Add(new ResponseHeaderActionFilter
+        (logger, "My-Key-From-Global", "My-Value-From-Global"));
+});
 
 builder.Services.AddScoped
     <ICountriesRepository, CountriesRepository>();
