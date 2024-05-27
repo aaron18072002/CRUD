@@ -12,7 +12,8 @@ namespace CRUDExample.Controllers
 {
     [Route("[controller]")]
     [TypeFilter(typeof(ResponseHeaderActionFilter), Arguments =
-            new string[] { "My-Key-From-Controller", "My-Value-From-Controller" })]
+            new object[] { "My-Key-From-Controller", 
+                "My-Value-From-Controller", 3 })]
     public class PersonsController : Controller
     {
         //private fields
@@ -35,7 +36,8 @@ namespace CRUDExample.Controllers
         [Route("/")]
         [TypeFilter(typeof(PersonsListActionFilter))]
         [TypeFilter(typeof(ResponseHeaderActionFilter), Arguments = 
-            new string[] { "My-Key-From-Action", "My-Value-From-Action" })]
+            new object[] { "My-Key-From-Action", "My-Value-From-Action", 
+                1 })]
         public async Task<IActionResult> Index
             (string searchBy, string? searchString, 
             string sortBy = nameof(PersonResponse.PersonName), 
